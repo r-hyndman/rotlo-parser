@@ -1,0 +1,71 @@
+<template>
+  <div class="d-flex justify-space-between" v-if="isLoaded">
+    <div>{{ playerName }}</div>
+    <div>damage: {{ totalDamage }}</div>
+    <div>duration: {{ duration }}</div>
+    <div>dps: {{ dps }}</div>
+  </div>
+</template>
+
+<script>
+import { mapGetters } from 'vuex';
+
+export default {
+  name: 'PlayerData',
+  props: {
+    playerId: {
+      type: String,
+      required: true,
+    },
+    data: {
+      type: Array,
+      required: true,
+    },
+  },
+  data: () => ({
+    isLoaded: false,
+    totalDamage: 0,
+    startTime: undefined,
+    endTime: undefined,
+    duration: undefined,
+    dps: 0,
+  }),
+  mounted() {
+    this.reportId = this.$route.params.reportId;
+    this.isLoaded = true;
+    this.calculateDps();
+  },
+  computed: {
+    ...mapGetters('report', ['report']),
+    playerName() {
+      return this.report.players[this.playerId].name;
+    },
+  },
+  methods: {
+    calculateDps() {
+      for (let entry of this.data) {
+        if (entry.type === 'damage') {
+          if (!this.startTime) {
+            this.startTime = entry.timestamp;
+          }
+          this.totalDamage += entry.amount;
+          this.endTime = entry.timestamp;
+        } else if (entry.type === 'heal' || entry.type === 'cast') {
+          if (!this.startTime) {
+            this.startTime = entry.timestamp;
+          }
+        } else if (entry.type === 'death') {
+          if (!this.startTime) {
+            this.startTime = entry.timestamp;
+          }
+          console.log(entry);
+          this.endTime = entry.timestamp;
+          break;
+        }
+      }
+      this.duration = this.endTime - this.startTime;
+      this.dps = (this.totalDamage / this.duration) * 1000;
+    },
+  },
+};
+</script>
