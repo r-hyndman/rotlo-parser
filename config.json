@@ -1,0 +1,11 @@
+{
+  "auth": {
+    "clientId": "94448f2e-b553-49f3-b874-8f843cd44070",
+    "redirectUri": "https://warcraft-logs-parser.herokuapp.com/authorisation",
+    "authUri": "https://classic.warcraftlogs.com/oauth/authorize",
+    "tokenUri": "https://classic.warcraftlogs.com/oauth/token"
+  },
+  "api": {
+    "url": "https://classic.warcraftlogs.com/api/v2/user"
+  }
+}
