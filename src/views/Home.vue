@@ -46,7 +46,6 @@ export default {
   mounted() {
     const authToken = window.sessionStorage.getItem('access_token');
     if (authToken !== undefined && authToken !== null) {
-      console.log('authToken', authToken);
       this.isAuthorised = true;
     }
   },
