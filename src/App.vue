@@ -28,7 +28,7 @@ export default {
       full: 'Raiders of the Lost Orc',
       short: 'RotLO',
     },
-    version: 'v0.1',
+    version: 'v0.2',
   }),
   methods: {
     navHome() {
