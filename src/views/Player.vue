@@ -38,6 +38,7 @@ import { mapState } from 'vuex';
 import { statPriority } from '@/modules';
 import PageHeader from '@/components/PageHeader';
 import PlayerStats from '@/components/PlayerStats';
+import { Role } from '@/enums';
 
 export default {
   name: 'Player',
@@ -72,9 +73,9 @@ export default {
         : 'protection';
       const dpsStatPriority = statPriority.dps[classIndex][specIndex];
       const statType =
-        this.player.role === 'tank'
+        this.player.role === Role.TANK
           ? 'defense'
-          : this.player.role === 'healer'
+          : this.player.role === Role.HEALER
           ? 'spell'
           : dpsStatPriority;
       return {
