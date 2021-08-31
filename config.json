@@ -1,7 +1,7 @@
 {
   "auth": {
     "clientId": "94448f2e-b553-49f3-b874-8f843cd44070",
-    "redirectUri": "http://localhost:8080/authorisation",
+    "redirectUri": "http://rotlo-parser.herokuapp.com/authorisation",
     "authUri": "https://classic.warcraftlogs.com/oauth/authorize",
     "tokenUri": "https://classic.warcraftlogs.com/oauth/token"
   },
