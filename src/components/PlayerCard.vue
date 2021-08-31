@@ -40,7 +40,7 @@ export default {
         ? 'Protection'
         : '';
       const playerClass = this.player.class || '';
-      return `../images/icons/${playerClass}/${playerSpec}.png`;
+      return `../images/icons/${playerClass}/${playerSpec}.png`.toLowerCase();
     },
   },
   methods: {

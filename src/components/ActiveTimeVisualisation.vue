@@ -166,7 +166,7 @@ export default {
         ? 'Protection'
         : '';
       const playerClass = player.class || '';
-      const filename = `${playerClass}/${playerSpec}`;
+      const filename = `${playerClass}/${playerSpec}`.toLowerCase();
       return `../../../images/icons/${filename}.png`;
     },
     adjustedTick(value) {
