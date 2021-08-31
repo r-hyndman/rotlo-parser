@@ -1,19 +1,78 @@
 <template>
   <v-container v-if="isLoaded">
-    <page-header :title="encounter.name" subtitle="" />
-    <v-row v-for="(fight, index) in encounter.fights" :key="index">
+    <page-header :title="encounter.name" :subtitle="encounter.raid" />
+    <v-toolbar class="my-4">
+      <!-- Select Fight -->
+      <v-select
+        v-model="selectedFight"
+        class="mt-7 mr-4 dropdown"
+        dense
+        :items="fightNames"
+        label="Fight"
+      />
+      <!-- Select View -->
+      <v-select
+        v-model="selectedView"
+        class="mt-7 mr-4 dropdown"
+        dense
+        :items="viewOptions"
+        item-text="text"
+        item-value="component"
+        label="View"
+        return-object
+      />
+      <v-spacer></v-spacer>
+      <!-- Select Role Filter -->
+      <v-select
+        v-model="selectedRoleFilter"
+        class="mt-7 mr-4 dropdown"
+        dense
+        :items="roleFilters"
+        label="Role"
+      />
+      <!-- Select Class Filter -->
+      <v-select
+        v-model="selectedClassFilter"
+        class="mt-7 mr-4 dropdown"
+        dense
+        :items="classFilters"
+        label="Class"
+      />
+      <!-- Select Sort Option -->
+      <v-select
+        v-model="selectedSortOption"
+        class="mt-7 mr-4 dropdown"
+        dense
+        :items="sortOptions"
+        item-text="text"
+        item-value="function"
+        label="Sort"
+        return-object
+      />
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn icon class="ma-0 pa-0" @click="toggleSortDirection">
+            <v-icon v-bind="attrs" v-on="on" :class="sortDirection">
+              filter_list
+            </v-icon>
+          </v-btn>
+        </template>
+        <span>Reverse Sort</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn icon class="ma-0 pa-0" @click="resetSortAndFilters">
+            <v-icon v-bind="attrs" v-on="on">restart_alt</v-icon>
+          </v-btn>
+        </template>
+        <span>Reset Filters</span>
+      </v-tooltip>
+    </v-toolbar>
+    <v-row>
       <v-col>
-        <div class="my-4 text-h4">{{ fightTitle(fight, index) }}</div>
-        <!-- <player-data
-          v-for="(player, i) in playerData[index]"
-          :key="i"
-          :playerId="player.id"
-          :data="player.data"
-        /> -->
-        <div class="text-h5">Active Time</div>
-        <active-time
-          class="d-flex flex-column"
-          :active-times="activeTimes(fight.id)"
+        <component
+          :is="selectedView.component"
+          v-bind="selectedViewProps"
         />
       </v-col>
     </v-row>
@@ -24,14 +83,17 @@
 import moment from 'moment';
 import { mapGetters } from 'vuex';
 import PageHeader from '@/components/PageHeader';
-import ActiveTime from '@/components/ActiveTime';
-import { objectHasProperty } from '@/utils/functions';
+import ActiveTimeVisualisation from '@/components/ActiveTimeVisualisation';
+import DpsVisualisation from '@/components/DpsVisualisation';
+import { clamp01, objectHasProperty } from '@/utils';
+import { Role } from '@/enums';
 
 export default {
   name: 'Encounter',
   components: {
     PageHeader,
-    ActiveTime,
+    ActiveTimeVisualisation,
+    DpsVisualisation,
   },
   data: () => ({
     reportId: undefined,
@@ -40,6 +102,12 @@ export default {
     playerData: {},
     startTime: {},
     endTime: {},
+    selectedFight: undefined,
+    selectedView: undefined,
+    selectedClassFilter: undefined,
+    selectedRoleFilter: undefined,
+    selectedSortOption: undefined,
+    sortReverse: false,
   }),
   mounted() {
     this.reportId = this.$route.params.reportId;
@@ -50,10 +118,22 @@ export default {
       this.endTime[fight.id] = Number.MIN_VALUE;
       this.playerData[fight.id] = {
         activeTimes: this.calculateActiveTime(fight.id),
+        // dps: this.calculateDps(fight.id),
       };
     }
 
+    this.selectedFight = this.fightTitle(this.encounter.fights[0], 0);
+    this.resetSortAndFilters();
+    this.selectedView = this.viewOptions[0];
+
     this.isLoaded = true;
+  },
+  watch: {
+    selectedView(newValue) {
+      if (this.selectedView !== newValue) {
+        this.resetSortAndFilters();
+      }
+    },
   },
   computed: {
     ...mapGetters('report', ['report']),
@@ -62,10 +142,178 @@ export default {
         (e) => e.id == this.encounterId
       );
     },
+    viewOptions() {
+      return [
+        {
+          text: 'Active Time',
+          component: 'active-time-visualisation',
+          props: {
+            activeTimes: this.activeTimes(this.selectedFightId),
+          },
+        },
+        // {
+        //   text: 'Dps',
+        //   component: 'dps-visualisation',
+        //   props: {
+        //     dps: this.dps(this.selectedFightId),
+        //   },
+        // },
+      ];
+    },
+    classFilters() {
+      let playersWithRoleMatchingFilter = this.playersInEncounter;
+      if (this.selectedRoleFilter !== 'Any') {
+        playersWithRoleMatchingFilter =
+          playersWithRoleMatchingFilter.filter(
+            (player) => player.role === this.selectedRoleFilter
+          );
+      }
+
+      return [
+        'Any',
+        ...playersWithRoleMatchingFilter
+          .map((player) => player.class)
+          .sort(),
+      ];
+    },
+    classesInEncounter() {
+      return this.playersInEncounter.map((player) => player.class);
+    },
+    playerIdsInEncounter() {
+      return Object.keys(this.encounter.fights[0].data);
+    },
+    playersInEncounter() {
+      return Object.values(this.report.players).filter((player) =>
+        this.playerIdsInEncounter.includes(`${player.id}`)
+      );
+    },
+    specsInEncounter() {
+      return this.playersInEncounter.map((player) => player.spec);
+    },
+    roleFilters() {
+      return ['Any', ...Object.values(Role)];
+    },
+    sortOptions() {
+      return [
+        // Sort by name
+        {
+          text: 'Name',
+          function: (a, b) => {
+            return a.player.name < b.player.name
+              ? -1
+              : a.player.name > b.player.name
+              ? 1
+              : 0;
+          },
+        },
+        // Sort by class
+        {
+          text: 'Class',
+          function: (a, b) => {
+            return a.player.class < b.player.class
+              ? -1
+              : a.player.class > b.player.class
+              ? 1
+              : 0;
+          },
+        },
+        // Sort by role
+        {
+          text: 'Role',
+          function: (a, b) => {
+            return a.player.role < b.player.role
+              ? -1
+              : a.player.role > b.player.role
+              ? 1
+              : 0;
+          },
+        },
+        // Sort by start time
+        {
+          text: 'Start Time',
+          function: (a, b) => {
+            return a.entryData[0].start < b.entryData[0].start
+              ? -1
+              : a.entryData[0].start > b.entryData[0].start
+              ? 1
+              : 0;
+          },
+        },
+        // Sort by end time
+        {
+          text: 'End Time',
+          function: (a, b) => {
+            const lastIndexA = a.entryData.length - 1;
+            const lastIndexB = b.entryData.length - 1;
+            return a.entryData[lastIndexA].end <
+              b.entryData[lastIndexB].end
+              ? -1
+              : a.entryData[lastIndexA].end >
+                b.entryData[lastIndexB].end
+              ? 1
+              : 0;
+          },
+        },
+      ];
+    },
+    fightNames() {
+      let index = 0;
+      return this.encounter.fights.map((fight) => {
+        return this.fightTitle(fight, index++);
+      });
+    },
+    selectedFightId() {
+      let index = 0;
+      for (let fight of this.encounter.fights) {
+        if (this.fightTitle(fight, index++) === this.selectedFight) {
+          return fight.id;
+        }
+      }
+      return this.encounter.fights[0].id;
+    },
+    sortDirection() {
+      return {
+        't-flipped-y': this.sortReverse,
+      };
+    },
+    selectedViewProps() {
+      return this.viewOptions.find((option) => {
+        return option.component === this.selectedView.component;
+      }).props;
+    },
   },
   methods: {
-    activeTimes(index) {
-      return Object.values(this.playerData[index].activeTimes);
+    applySortAndFilters(array) {
+      array.sort((a, b) => this.selectedSortOption.function(a, b));
+
+      if (this.sortReverse) {
+        array = array.reverse();
+      }
+
+      if (this.selectedRoleFilter !== 'Any') {
+        array = array.filter(
+          (entry) => entry.player.role === this.selectedRoleFilter
+        );
+      }
+
+      if (this.selectedClassFilter !== 'Any') {
+        array = array.filter(
+          (entry) => entry.player.class === this.selectedClassFilter
+        );
+      }
+
+      return array;
+    },
+    activeTimes(fightIndex) {
+      let activeTimes = Object.values(
+        this.playerData[fightIndex].activeTimes
+      );
+
+      return this.applySortAndFilters(activeTimes);
+    },
+    dps() {
+      // let dps = Object.values(this.playerData[fightIndex].dps);
+      return [];
     },
     duration(fightId) {
       return this.endTime[fightId] - this.startTime[fightId];
@@ -106,8 +354,8 @@ export default {
           endTime: undefined,
         };
         let newActiveTimeEntry = {};
-        const playerReference =
-          this.report.players[playerCombatData.id];
+        // const playerReference =
+        //   this.report.players[playerCombatData.id];
 
         // For each combat event in the data array
         for (let combatEvent of playerCombatData.data) {
@@ -124,13 +372,13 @@ export default {
             if (
               activeTime[playerCombatData.id].entryData.length > 0
             ) {
-              if (playerReference.name === 'Wetcheeks') {
-                console.log(
-                  playerReference.name,
-                  'post-death',
-                  combatEvent
-                );
-              }
+              // if (playerReference.name === 'Wetcheeks') {
+              //   console.log(
+              //     playerReference.name,
+              //     'post-death',
+              //     combatEvent
+              //   );
+              // }
             }
 
             // Ensure the start time the earliest timestamp
@@ -159,13 +407,13 @@ export default {
             if (
               activeTime[playerCombatData.id].entryData.length > 0
             ) {
-              if (playerReference.name === 'Wetcheeks') {
-                console.log(
-                  playerReference.name,
-                  'post-death',
-                  combatEvent
-                );
-              }
+              // if (playerReference.name === 'Wetcheeks') {
+              //   console.log(
+              //     playerReference.name,
+              //     'post-death',
+              //     combatEvent
+              //   );
+              // }
             }
           }
         }
@@ -184,13 +432,13 @@ export default {
       for (let [key, value] of Object.entries(activeTime)) {
         const playerReference = this.report.players[key];
         const lastElement = this.getlastArrayElement(value.entryData);
-        if (playerReference.name === 'Wetcheeks') {
-          console.log(
-            playerReference.name,
-            lastElement,
-            value.entryData
-          );
-        }
+        // if (playerReference.name === 'Wetcheeks') {
+        //   console.log(
+        //     playerReference.name,
+        //     lastElement,
+        //     value.entryData
+        //   );
+        // }
 
         // If this entry has no end time, set the end time to the end of the encounter
         // if (!lastElement.end) {
@@ -210,6 +458,7 @@ export default {
           name: playerReference.name,
           class: playerReference.class,
           spec: playerReference.spec,
+          role: playerReference.role,
         };
 
         activeTime[key].startTime = this.startTime[fightId];
@@ -217,12 +466,12 @@ export default {
 
         // Set the start and end times of each entry to a 0..1 value of the encounter duration
         for (let activeTimeEntry of value.entryData) {
-          activeTimeEntry.start = this.clamp01(
+          activeTimeEntry.start = clamp01(
             (activeTimeEntry.start - this.startTime[fightId]) /
               this.duration(fightId)
           );
 
-          activeTimeEntry.end = this.clamp01(
+          activeTimeEntry.end = clamp01(
             (activeTimeEntry.end - this.startTime[fightId]) /
               this.duration(fightId)
           );
@@ -231,6 +480,7 @@ export default {
 
       return activeTime;
     },
+    // calculateDps(fightId) {},
     isCombatAbility(type) {
       return type === 'heal' || type === 'cast' || type === 'damage';
     },
@@ -240,14 +490,29 @@ export default {
     getlastArrayElement(array) {
       return array[array.length - 1];
     },
-    clamp01(value) {
-      return value < 0 ? 0 : value > 1 ? 1 : value;
-    },
     trySetObjectProperty(object, key, value) {
       if (!objectHasProperty(object, key)) {
         object[key] = value;
       }
     },
+    toggleSortDirection() {
+      this.sortReverse = !this.sortReverse;
+    },
+    resetSortAndFilters() {
+      this.selectedSortOption = this.sortOptions[0];
+      this.selectedRoleFilter = this.roleFilters[0];
+      this.selectedClassFilter = this.classFilters[0];
+    },
   },
 };
 </script>
+
+<style scoped>
+.t-flipped-y {
+  transform: scaleY(-1);
+}
+
+.dropdown {
+  max-width: 200px;
+}
+</style>

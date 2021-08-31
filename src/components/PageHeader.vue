@@ -1,8 +1,15 @@
 <template>
   <v-row class="mt-8">
-    <v-col>
-      <div class="text-h2">{{ title }}</div>
-      <div class="text-overline">{{ subtitle }}</div>
+    <v-col class="d-flex">
+      <div class="d-flex flex-column juatify-space-around">
+        <v-btn fab x-large @click="navBack" class="mr-6">
+          <v-icon>arrow_back</v-icon>
+        </v-btn>
+      </div>
+      <div class="d-flex flex-column">
+        <div class="text-h2">{{ title }}</div>
+        <div class="text-overline">{{ subtitle }}</div>
+      </div>
     </v-col>
   </v-row>
 </template>
@@ -18,6 +25,11 @@ export default {
     subtitle: {
       type: String,
       required: true,
+    },
+  },
+  methods: {
+    navBack() {
+      this.$router.go(-1);
     },
   },
 };

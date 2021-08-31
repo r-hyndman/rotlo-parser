@@ -58,7 +58,6 @@ export default {
           if (!this.startTime) {
             this.startTime = entry.timestamp;
           }
-          console.log(entry);
           this.endTime = entry.timestamp;
           break;
         }

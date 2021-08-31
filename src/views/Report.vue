@@ -10,11 +10,7 @@
       :title="report.raid.name"
       :subtitle="report.raid.date"
     />
-    <roster
-      :tanks="sortedTanks"
-      :dps="sortedDps"
-      :healers="sortedHealers"
-    />
+    <roster :tanks="tanks" :dps="dps" :healers="healers" />
     <encounters :encounters="encounters" />
   </v-container>
 </template>
@@ -28,6 +24,7 @@ import Loading from '@/components/Loading';
 import { mapActions, mapGetters } from 'vuex';
 import PageHeader from '@/components/PageHeader';
 import { objectHasProperty } from '@/utils/functions';
+import { Role, Specialisation, SpecialisationRoleMap } from '@/enums';
 
 export default {
   name: 'Home',
@@ -171,26 +168,21 @@ export default {
     encounters() {
       return Object.values(this.report.encounters);
     },
-    sortedTanks() {
-      return Object.values(this.report.players)
-        .filter((player) => player.role === 'tank')
-        .sort((a, b) => {
-          return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
-        });
+    tanks() {
+      return Object.values(this.report.players).filter(
+        (player) => player.role === Role.TANK
+      );
     },
-    sortedDps() {
-      return Object.values(this.report.players)
-        .filter((player) => player.role === 'dps')
-        .sort((a, b) => {
-          return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
-        });
+    dps() {
+      return Object.values(this.report.players).filter(
+        (player) =>
+          player.role === Role.MELEE || player.role === Role.RANGED
+      );
     },
-    sortedHealers() {
-      return Object.values(this.report.players)
-        .filter((player) => player.role === 'healer')
-        .sort((a, b) => {
-          return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
-        });
+    healers() {
+      return Object.values(this.report.players).filter(
+        (player) => player.role === Role.HEALER
+      );
     },
   },
   methods: {
@@ -253,6 +245,7 @@ export default {
             id: fight.id,
             name: fight.name,
             fights: [],
+            raid: this.fetchedReport.raid.name,
           };
           fightId = 0;
         } else {
@@ -373,8 +366,8 @@ export default {
         let rosteredPlayer = this.fetchedReport.raid.roster.find(
           (p) => p.id === player.id
         );
-        let playerData = this.fetchedReport.players[player.id];
-        playerData.role = 'dps';
+        this.fetchedReport.players[player.id].role =
+          this.determineDpsRole(player);
         rosteredPlayer.name = player.name;
       }
 
@@ -383,8 +376,7 @@ export default {
         let rosteredPlayer = this.fetchedReport.raid.roster.find(
           (p) => p.id === player.id
         );
-        let playerData = this.fetchedReport.players[player.id];
-        playerData.role = 'healer';
+        this.fetchedReport.players[player.id].role = Role.HEALER;
         rosteredPlayer.name = player.name;
       }
 
@@ -393,8 +385,7 @@ export default {
         let rosteredPlayer = this.fetchedReport.raid.roster.find(
           (p) => p.id === player.id
         );
-        let playerData = this.fetchedReport.players[player.id];
-        playerData.role = 'tank';
+        this.fetchedReport.players[player.id].role = Role.TANK;
         rosteredPlayer.name = player.name;
       }
 
@@ -454,6 +445,13 @@ export default {
       fight.data[playerId] = data.slice(1);
 
       this.queryIndex++;
+    },
+    determineDpsRole(player) {
+      return SpecialisationRoleMap[
+        Object.values(Specialisation).find(
+          (spec) => spec === player.specs[0]
+        )
+      ];
     },
   },
 };
