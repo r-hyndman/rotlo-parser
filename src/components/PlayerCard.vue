@@ -40,8 +40,7 @@ export default {
         ? 'Protection'
         : '';
       const playerClass = this.player.class || '';
-      const filename = `${playerClass}/${playerSpec}`;
-      return `../images/icons/${filename}.png`;
+      return `../images/icons/${playerClass}/${playerSpec}.png`;
     },
   },
   methods: {
