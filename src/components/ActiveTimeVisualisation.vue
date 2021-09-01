@@ -5,11 +5,6 @@
         This view is still in development
       </v-alert>
     </div>
-    <!-- <active-time-header
-      :start-time="activeTimes[0].startTime"
-      :end-time="activeTimes[0].endTime"
-      :max="visualisationWidth"
-    /> -->
     <div class="d-flex">
       <div class="left">
         <div
@@ -65,35 +60,10 @@
       </div>
       <div class="right"></div>
     </div>
-    <!-- <hr />
-    <div
-      class="d-flex flex-row mb-2"
-      v-for="(activeEntry, index) in activeTimes"
-      :key="index"
-    >
-      <v-img
-        class="mr-4"
-        max-height="24"
-        max-width="24"
-        :src="classIcon(activeEntry.player)"
-      />
-      <div class="name">{{ activeEntry.player.name }}</div>
-      <div class="d-flex flex-column justify-space-around">
-        <horizontal-bar
-          :entry-data="activeEntry.entryData"
-          :height="rowHeight"
-          :max="visualisationWidth"
-          :colour="classColour(activeEntry.player)"
-        />
-      </div>
-    </div> -->
   </div>
 </template>
 
 <script>
-// import ActiveTimeHeader from '@/components/ActiveTimeHeader';
-// import ActiveTimeEntry from '@/components/ActiveTimeEntry';
-// import HorizontalBar from '@/components/HorizontalBar';
 import { ClassColour } from '@/enums';
 
 export default {
@@ -103,11 +73,6 @@ export default {
       type: Array,
       required: true,
     },
-  },
-  components: {
-    // ActiveTimeHeader,
-    // ActiveTimeEntry,
-    // HorizontalBar,
   },
   data: () => ({
     visualisationWidth: 1200,
