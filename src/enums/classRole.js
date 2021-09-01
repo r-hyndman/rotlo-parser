@@ -23,7 +23,7 @@ const Specialisation = Object.freeze({
   ARMS: 'Arms',
   ASSASSINATION: 'Assassination',
   BALANCE: 'Balance',
-  BEASTMASTERY: 'Beastmastery',
+  BEASTMASTERY: 'BeastMastery',
   COMBAT: 'Combat',
   DEMONOLOGY: 'Demonology',
   DESTRUCTION: 'Destruction',

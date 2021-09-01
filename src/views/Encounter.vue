@@ -27,7 +27,7 @@
         v-model="selectedRoleFilter"
         class="mt-7 mr-4 dropdown"
         dense
-        :items="roleFilters"
+        :items="refinedRoleFilters"
         label="Role"
       />
       <!-- Select Class Filter -->
@@ -35,7 +35,7 @@
         v-model="selectedClassFilter"
         class="mt-7 mr-4 dropdown"
         dense
-        :items="classFilters"
+        :items="refinedClassFilters"
         label="Class"
       />
       <!-- Select Sort Option -->
@@ -86,7 +86,7 @@ import PageHeader from '@/components/PageHeader';
 import ActiveTimeVisualisation from '@/components/ActiveTimeVisualisation';
 import DpsVisualisation from '@/components/DpsVisualisation';
 import { clamp01, objectHasProperty } from '@/utils';
-import { Role } from '@/enums';
+import { Class, Role } from '@/enums';
 
 export default {
   name: 'Encounter',
@@ -160,7 +160,10 @@ export default {
         // },
       ];
     },
-    classFilters() {
+    defaultClassFilters() {
+      return ['Any', ...Object.values(Class)];
+    },
+    refinedClassFilters() {
       let playersWithRoleMatchingFilter = this.playersInEncounter;
       if (this.selectedRoleFilter !== 'Any') {
         playersWithRoleMatchingFilter =
@@ -190,8 +193,24 @@ export default {
     specsInEncounter() {
       return this.playersInEncounter.map((player) => player.spec);
     },
-    roleFilters() {
+    defaultRoleFilters() {
       return ['Any', ...Object.values(Role)];
+    },
+    refinedRoleFilters() {
+      let playersWithClassMatchingFilter = this.playersInEncounter;
+      if (this.selectedClassFilter !== 'Any') {
+        playersWithClassMatchingFilter =
+          playersWithClassMatchingFilter.filter(
+            (player) => player.class === this.selectedClassFilter
+          );
+      }
+
+      return [
+        'Any',
+        ...playersWithClassMatchingFilter
+          .map((player) => player.role)
+          .sort(),
+      ];
     },
     sortOptions() {
       return [
@@ -500,8 +519,10 @@ export default {
     },
     resetSortAndFilters() {
       this.selectedSortOption = this.sortOptions[0];
-      this.selectedRoleFilter = this.roleFilters[0];
-      this.selectedClassFilter = this.classFilters[0];
+      this.selectedRoleFilter = this.defaultRoleFilters[0];
+      this.selectedClassFilter = this.defaultClassFilters[0];
+      this.selectedRoleFilter = this.refinedRoleFilters[0];
+      this.selectedClassFilter = this.refinedClassFilters[0];
     },
   },
 };
