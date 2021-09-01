@@ -4,12 +4,11 @@
       <div class="my-4 text-h4">Encounters</div>
       <v-row>
         <v-col
-          cols="4"
           xl="4"
           lg="4"
           md="6"
-          sm="12"
-          xs="12"
+          sm="6"
+          cols="12"
           v-for="(encounter, index) in uniqueEncounters"
           :key="index"
         >

@@ -6,12 +6,11 @@
         <div class="my-4 text-h5">Tanks ({{ tanks.length }})</div>
         <v-row>
           <v-col
-            cols="2"
             xl="2"
-            lg="3"
-            md="4"
-            sm="6"
-            xs="12"
+            lg="2"
+            md="3"
+            sm="4"
+            cols="12"
             v-for="(player, index) in tanks"
             :key="index"
           >
@@ -21,12 +20,11 @@
         <div class="my-4 text-h5">DPS ({{ dps.length }})</div>
         <v-row>
           <v-col
-            cols="2"
             xl="2"
-            lg="3"
-            md="4"
-            sm="6"
-            xs="12"
+            lg="2"
+            md="3"
+            sm="4"
+            cols="12"
             v-for="(player, index) in dps"
             :key="index"
           >
@@ -36,12 +34,11 @@
         <div class="my-4 text-h5">Healers ({{ healers.length }})</div>
         <v-row>
           <v-col
-            cols="2"
             xl="2"
-            lg="3"
-            md="4"
-            sm="6"
-            xs="12"
+            lg="2"
+            md="3"
+            sm="4"
+            cols="12"
             v-for="(player, index) in healers"
             :key="index"
           >
