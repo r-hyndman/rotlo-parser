@@ -1,7 +1,7 @@
 <template>
   <div class="d-flex justify-space-between" v-if="isLoaded">
     <div>{{ playerName }}</div>
-    <div>damage: {{ totalDamage }}</div>
+    <div>damage: {{ damageDone }}</div>
     <div>duration: {{ duration }}</div>
     <div>dps: {{ dps }}</div>
   </div>
@@ -24,7 +24,7 @@ export default {
   },
   data: () => ({
     isLoaded: false,
-    totalDamage: 0,
+    damageDone: 0,
     startTime: undefined,
     endTime: undefined,
     duration: undefined,
@@ -48,7 +48,7 @@ export default {
           if (!this.startTime) {
             this.startTime = entry.timestamp;
           }
-          this.totalDamage += entry.amount;
+          this.damageDone += entry.amount;
           this.endTime = entry.timestamp;
         } else if (entry.type === 'heal' || entry.type === 'cast') {
           if (!this.startTime) {
@@ -63,7 +63,7 @@ export default {
         }
       }
       this.duration = this.endTime - this.startTime;
-      this.dps = (this.totalDamage / this.duration) * 1000;
+      this.dps = (this.damageDone / this.duration) * 1000;
     },
   },
 };

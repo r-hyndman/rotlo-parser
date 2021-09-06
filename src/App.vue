@@ -1,15 +1,15 @@
 <template>
   <v-app>
-    <v-app-bar app color="primary">
+    <v-app-bar v-if="isAuthorised" app color="primary">
       <div class="d-flex link" @click="navHome">
         <v-avatar class="mr-4">
           <img
             src="../public/images/rotlo.png"
-            :alt="guildName.full"
+            :alt="app.guild.long"
           />
         </v-avatar>
         <div class="text-h5 d-flex flex-column justify-space-around">
-          {{ guildName.short }} Parser {{ version }}
+          {{ app.guild.short }} {{ app.name.short }} {{ app.version }}
         </div>
       </div>
       <v-spacer></v-spacer>
@@ -21,18 +21,24 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
 export default {
   name: 'App',
-  data: () => ({
-    guildName: {
-      full: 'Raiders of the Lost Orc',
-      short: 'RotLO',
+  computed: {
+    ...mapGetters('app', ['app']),
+    ...mapGetters('auth', ['token']),
+    isAuthorised() {
+      const authToken = window.sessionStorage.getItem('access_token');
+      return (
+        this.token !== undefined ||
+        (authToken !== undefined && authToken !== null)
+      );
     },
-    version: 'v0.2',
-  }),
+  },
   methods: {
     navHome() {
-      this.$router.push('/');
+      this.$router.push({ name: 'Home' });
     },
   },
 };

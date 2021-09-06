@@ -28,7 +28,7 @@ function authorise() {
   );
 }
 
-async function fetchToken(code) {
+async function fetchToken(code, callback) {
   const codeVerifier = window.sessionStorage.getItem('codeVerifier');
   try {
     await axios({
@@ -45,10 +45,15 @@ async function fetchToken(code) {
         code: code,
       },
     }).then((response) => {
-      window.sessionStorage.setItem(
-        'access_token',
-        response.data.access_token
-      );
+      if (response.status === 200) {
+        window.sessionStorage.setItem(
+          'access_token',
+          response.data.access_token
+        );
+        callback(response.data.access_token);
+      } else {
+        console.error('Could not retrieve access token');
+      }
     });
   } catch (e) {
     console.error(e);

@@ -4,6 +4,6 @@
 
 <script>
 export default {
-  name: 'Dps Visualisation',
+  name: 'DpsVisualisation',
 };
 </script>

@@ -7,13 +7,24 @@
       <v-progress-linear
         :width="width"
         color="primary"
-        class="mb-6"
-        :value="percentLoaded"
-        :buffer-value="bufferAmount"
+        class="mb-2"
+        :value="primaryPercentLoaded"
+        :buffer-value="primaryBufferAmount"
         stream
         rounded
       />
-      <div>Fetching {{ loadingMessage }}...</div>
+      <v-progress-linear
+        :width="width"
+        color="green"
+        class="mb-2"
+        :value="secondaryPercentLoaded"
+        :buffer-value="secondaryBufferAmount"
+        stream
+        rounded
+      />
+      <div>
+        {{ finalLoadingMessage }}
+      </div>
     </div>
   </v-container>
 </template>
@@ -22,17 +33,29 @@
 export default {
   name: 'Loading',
   props: {
-    loadingMessage: {
+    primaryLoadingMessage: {
       type: String,
       required: true,
     },
-    loadedCount: {
+    primaryCount: {
       type: Number,
       required: true,
     },
-    queryCount: {
+    primaryTotal: {
       type: Number,
       required: true,
+    },
+    secondaryLoadingMessage: {
+      type: String,
+      default: '',
+    },
+    secondaryCount: {
+      type: Number,
+      default: 0,
+    },
+    secondaryTotal: {
+      type: Number,
+      default: 0,
     },
   },
   data: () => ({
@@ -42,14 +65,30 @@ export default {
     componentWidth() {
       return `width: ${this.width}px`;
     },
-    percentLoaded() {
-      return (this.loadedCount / this.queryCount) * 100;
+    primaryPercentLoaded() {
+      return (this.primaryCount / this.primaryTotal) * 100;
     },
-    bufferAmount() {
-      return 1 - this.percentLoaded;
+    primaryBufferAmount() {
+      return 1 - this.primaryPercentLoaded;
     },
-    percentage() {
-      return `${Math.round(this.percentLoaded)}%`;
+    primaryPercentage() {
+      return `${Math.round(this.primaryPercentLoaded)}%`;
+    },
+    secondaryPercentLoaded() {
+      return this.secondaryCount > 0
+        ? (this.secondaryCount / this.secondaryTotal) * 100
+        : 0;
+    },
+    secondaryBufferAmount() {
+      return 1 - this.secondaryPercentLoaded ?? 0;
+    },
+    secondaryPercentage() {
+      return `${Math.round(this.secondaryPercentLoaded)}%`;
+    },
+    finalLoadingMessage() {
+      return this.secondaryLoadingMessage === ''
+        ? `Fetching ${this.primaryLoadingMessage}`
+        : `Fetching ${this.secondaryLoadingMessage}...`;
     },
   },
 };

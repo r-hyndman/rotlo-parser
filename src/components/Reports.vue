@@ -25,9 +25,12 @@ export default {
     ReportCard,
   },
   computed: {
-    ...mapGetters('report', ['reports']),
+    ...mapGetters('report', ['report', 'reports']),
     hasReports() {
-      return this.reports !== {};
+      return (
+        Object.keys(this.reports) &&
+        Object.keys(this.reports).length > 0
+      );
     },
   },
 };

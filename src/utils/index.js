@@ -1,3 +1,17 @@
-import { clamp01, objectHasProperty } from './functions';
+import {
+  clamp01,
+  determinePlayerRole,
+  getClassFromString,
+  getSpecFromString,
+  objectHasKey,
+  tryAddObjectProperty,
+} from './functions';
 
-export { clamp01, objectHasProperty };
+export {
+  clamp01,
+  determinePlayerRole,
+  getClassFromString,
+  getSpecFromString,
+  objectHasKey,
+  tryAddObjectProperty,
+};

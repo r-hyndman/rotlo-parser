@@ -61,9 +61,13 @@ export default {
   },
   methods: {
     loadEncounter() {
-      this.$router.push(
-        `${this.reportId}/encounter/${this.encounter.fights[0].id}`
-      );
+      this.$router.push({
+        name: 'Encounter',
+        params: {
+          reportId: this.reportId,
+          encounterId: this.encounter.fights[0].id,
+        },
+      });
     },
   },
 };
