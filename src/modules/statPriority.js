@@ -1,43 +1,45 @@
+import { Class, Specialisation } from '@/enums';
+
 const statPriority = {
   dps: {
-    druid: {
-      balance: 'spell',
-      feral: 'melee',
+    [Class.DRUID]: {
+      [Specialisation.BALANCE]: 'spell',
+      [Specialisation.FERAL]: 'melee',
     },
-    hunter: {
-      beastmastery: 'ranged',
-      marksmanship: 'ranged',
-      survival: 'ranged',
+    [Class.HUNTER]: {
+      [Specialisation.BEASTMASTERY]: 'ranged',
+      [Specialisation.MARKSMANSHIP]: 'ranged',
+      [Specialisation.SURVIVAL]: 'ranged',
     },
-    mage: {
-      arcane: 'spell',
-      fire: 'spell',
-      frost: 'spell',
+    [Class.MAGE]: {
+      [Specialisation.ARCANE]: 'spell',
+      [Specialisation.FIRE]: 'spell',
+      [Specialisation.FROST]: 'spell',
     },
-    paladin: {
-      retribution: 'melee',
+    [Class.PALADIN]: {
+      [Specialisation.RETRIBUTION]: 'melee',
     },
-    priest: {
-      discipline: 'spell',
-      shadow: 'spell',
+    [Class.PRIEST]: {
+      [Specialisation.DISCIPLINE]: 'spell',
+      [Specialisation.SHADOW]: 'spell',
     },
-    rogue: {
-      assassination: 'melee',
-      combat: 'melee',
-      subtlety: 'melee',
+    [Class.ROGUE]: {
+      [Specialisation.ASSASSINATION]: 'melee',
+      [Specialisation.COMBAT]: 'melee',
+      [Specialisation.SUBTLETY]: 'melee',
     },
-    shaman: {
-      elemental: 'spell',
-      enhancement: 'melee',
+    [Class.SHAMAN]: {
+      [Specialisation.ELEMENTAL]: 'spell',
+      [Specialisation.ENHANCEMENT]: 'melee',
     },
-    warlock: {
-      affliction: 'spell',
-      demonology: 'spell',
-      destruction: 'spell',
+    [Class.WARLOCK]: {
+      [Specialisation.AFFLICTION]: 'spell',
+      [Specialisation.DEMONOLOGY]: 'spell',
+      [Specialisation.DESTRUCTION]: 'spell',
     },
-    warrior: {
-      arms: 'melee',
-      fury: 'melee',
+    [Class.WARRIOR]: {
+      [Specialisation.ARMS]: 'melee',
+      [Specialisation.FURY]: 'melee',
     },
   },
 };

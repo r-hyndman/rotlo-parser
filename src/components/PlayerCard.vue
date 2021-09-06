@@ -5,7 +5,7 @@
         class="mr-4"
         max-height="24"
         max-width="24"
-        :src="classIcon"
+        :src="player.class.spec.icon"
       />
       <div :style="playerClass">{{ player.name }}</div>
     </div>
@@ -13,8 +13,6 @@
 </template>
 
 <script>
-import { ClassColour } from '@/enums';
-
 export default {
   name: 'PlayerCard',
   props: {
@@ -23,29 +21,20 @@ export default {
       required: true,
     },
   },
-  data: () => ({
-    reportId: undefined,
-  }),
-  mounted() {
-    this.reportId = this.$route.params.reportId;
-  },
   computed: {
     playerClass() {
-      return `color: ${ClassColour[this.player.class.toUpperCase()]}`;
-    },
-    classIcon() {
-      const playerSpec = this.player.spec
-        ? this.player.spec
-        : this.player.class === 'Warrior'
-        ? 'Protection'
-        : '';
-      const playerClass = this.player.class || '';
-      return `../images/icons/${playerClass}/${playerSpec}.png`.toLowerCase();
+      return `color: ${this.player.class.colour}`;
     },
   },
   methods: {
     loadPlayer() {
-      this.$router.push(`${this.reportId}/player/${this.player.id}`);
+      this.$router.push({
+        name: 'Player',
+        params: {
+          reportId: this.$route.params.reportId,
+          playerId: this.player.id,
+        },
+      });
     },
   },
 };

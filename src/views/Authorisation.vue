@@ -4,15 +4,21 @@
 
 <script>
 import { fetchToken } from '@/plugins/auth';
-import { objectHasProperty } from '@/utils/functions';
+import { objectHasKey } from '@/utils/functions';
+import { mapActions } from 'vuex';
 
 export default {
   name: 'Authorisation',
   mounted() {
-    if (objectHasProperty(this.$route.query, 'code')) {
-      fetchToken(this.$route.query.code);
+    if (objectHasKey(this.$route.query, 'code')) {
+      fetchToken(this.$route.query.code, this.setToken);
     }
-    this.$router.push('/');
+    this.$router.push({ name: 'Home' });
+  },
+  methods: {
+    ...mapActions({
+      setToken: 'auth/setToken',
+    }),
   },
 };
 </script>

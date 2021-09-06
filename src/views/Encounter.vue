@@ -1,72 +1,96 @@
 <template>
   <v-container v-if="isLoaded">
-    <page-header :title="encounter.name" :subtitle="encounter.raid" />
+    <page-header
+      :title="encounter.name"
+      :subtitle="report.raid.name"
+    />
     <v-toolbar class="my-4">
       <!-- Select Fight -->
-      <v-select
-        v-model="selectedFight"
-        class="mt-7 mr-4 dropdown"
-        dense
-        :items="fightNames"
-        label="Fight"
-      />
-      <!-- Select View -->
-      <v-select
-        v-model="selectedView"
-        class="mt-7 mr-4 dropdown"
-        dense
-        :items="viewOptions"
-        item-text="text"
-        item-value="component"
-        label="View"
-        return-object
-      />
+      <v-col cols="3">
+        <v-select
+          v-model="selectedFight"
+          class="mt-7 mr-4"
+          dense
+          :items="fightNames"
+          label="Fight"
+        />
+      </v-col>
       <v-spacer></v-spacer>
+      <!-- Select View -->
+      <v-col cols="2">
+        <v-select
+          v-model="selectedView"
+          class="mt-7 mr-4"
+          dense
+          :items="viewOptions"
+          item-text="text"
+          item-value="component"
+          label="View"
+          return-object
+        />
+      </v-col>
       <!-- Select Role Filter -->
-      <v-select
-        v-model="selectedRoleFilter"
-        class="mt-7 mr-4 dropdown"
-        dense
-        :items="refinedRoleFilters"
-        label="Role"
-      />
+      <v-col cols="2">
+        <v-select
+          v-model="selectedRoleFilter"
+          class="mt-7 mr-4"
+          dense
+          :items="refinedRoleFilters"
+          label="Role"
+        />
+      </v-col>
       <!-- Select Class Filter -->
-      <v-select
-        v-model="selectedClassFilter"
-        class="mt-7 mr-4 dropdown"
-        dense
-        :items="refinedClassFilters"
-        label="Class"
-      />
+      <v-col cols="2">
+        <v-select
+          v-model="selectedClassFilter"
+          class="mt-7 mr-4"
+          dense
+          :items="refinedClassFilters"
+          label="Class"
+        />
+      </v-col>
       <!-- Select Sort Option -->
-      <v-select
-        v-model="selectedSortOption"
-        class="mt-7 mr-4 dropdown"
-        dense
-        :items="sortOptions"
-        item-text="text"
-        item-value="function"
-        label="Sort"
-        return-object
-      />
-      <v-tooltip bottom>
-        <template v-slot:activator="{ on, attrs }">
-          <v-btn icon class="ma-0 pa-0" @click="toggleSortDirection">
-            <v-icon v-bind="attrs" v-on="on" :class="sortDirection">
-              filter_list
-            </v-icon>
-          </v-btn>
-        </template>
-        <span>Reverse Sort</span>
-      </v-tooltip>
-      <v-tooltip bottom>
-        <template v-slot:activator="{ on, attrs }">
-          <v-btn icon class="ma-0 pa-0" @click="resetSortAndFilters">
-            <v-icon v-bind="attrs" v-on="on">restart_alt</v-icon>
-          </v-btn>
-        </template>
-        <span>Reset Filters</span>
-      </v-tooltip>
+      <v-col cols="2">
+        <v-select
+          v-model="selectedSortOption"
+          class="mt-7 mr-4"
+          dense
+          :items="viewSortOptions"
+          item-text="text"
+          item-value="function"
+          label="Sort"
+          return-object
+        />
+      </v-col>
+      <div class="d-flex">
+        <v-spacer></v-spacer>
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              icon
+              class="ma-0 pa-0"
+              @click="toggleSortDirection"
+            >
+              <v-icon v-bind="attrs" v-on="on" :class="sortDirection">
+                filter_list
+              </v-icon>
+            </v-btn>
+          </template>
+          <span>Reverse Sort</span>
+        </v-tooltip>
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              icon
+              class="ma-0 pa-0"
+              @click="resetSortAndFilters"
+            >
+              <v-icon v-bind="attrs" v-on="on">restart_alt</v-icon>
+            </v-btn>
+          </template>
+          <span>Reset Filters</span>
+        </v-tooltip>
+      </div>
     </v-toolbar>
     <v-row>
       <v-col>
@@ -83,17 +107,19 @@
 import moment from 'moment';
 import { mapGetters } from 'vuex';
 import PageHeader from '@/components/PageHeader';
-import ActiveTimeVisualisation from '@/components/ActiveTimeVisualisation';
-import DpsVisualisation from '@/components/DpsVisualisation';
-import { clamp01, objectHasProperty } from '@/utils';
+import ActiveTimeView from '@/components/ActiveTimeView';
+// import DpsView from '@/components/DpsView';
+import DamageDoneView from '@/components/DamageDoneView';
+import { clamp01, objectHasKey, tryAddObjectProperty } from '@/utils';
 import { Class, Role } from '@/enums';
 
 export default {
   name: 'Encounter',
   components: {
     PageHeader,
-    ActiveTimeVisualisation,
-    DpsVisualisation,
+    ActiveTimeView,
+    // DpsView,
+    DamageDoneView,
   },
   data: () => ({
     reportId: undefined,
@@ -116,29 +142,29 @@ export default {
     for (let fight of this.encounter.fights) {
       this.startTime[fight.id] = Number.MAX_VALUE;
       this.endTime[fight.id] = Number.MIN_VALUE;
+
       this.playerData[fight.id] = {
         activeTimes: this.calculateActiveTime(fight.id),
-        // dps: this.calculateDps(fight.id),
+        // dps: [], //this.calculateDps(fight.id),
+        damageDone: this.calculateDamageDone(fight.id),
       };
     }
 
     this.selectedFight = this.fightTitle(this.encounter.fights[0], 0);
-    this.resetSortAndFilters();
     this.selectedView = this.viewOptions[0];
+    this.resetSortAndFilters();
 
     this.isLoaded = true;
   },
   watch: {
-    selectedView(newValue) {
-      if (this.selectedView !== newValue) {
-        this.resetSortAndFilters();
-      }
+    selectedView() {
+      this.tryResetSort();
     },
   },
   computed: {
     ...mapGetters('report', ['report']),
     encounter() {
-      return Object.values(this.report.encounters).find(
+      return Object.values(this.report.raid.encounters).find(
         (e) => e.id == this.encounterId
       );
     },
@@ -146,22 +172,22 @@ export default {
       return [
         {
           text: 'Active Time',
-          component: 'active-time-visualisation',
+          component: 'active-time-view',
           props: {
             activeTimes: this.activeTimes(this.selectedFightId),
           },
         },
-        // {
-        //   text: 'Dps',
-        //   component: 'dps-visualisation',
-        //   props: {
-        //     dps: this.dps(this.selectedFightId),
-        //   },
-        // },
+        {
+          text: 'Damage Done',
+          component: 'damage-done-view',
+          props: {
+            damageDone: this.damageDone(this.selectedFightId),
+          },
+        },
       ];
     },
     defaultClassFilters() {
-      return ['Any', ...Object.values(Class)];
+      return ['Any', Object.values(Class)];
     },
     refinedClassFilters() {
       let playersWithRoleMatchingFilter = this.playersInEncounter;
@@ -175,23 +201,27 @@ export default {
       return [
         'Any',
         ...playersWithRoleMatchingFilter
-          .map((player) => player.class)
+          .map((player) => player.class.name)
           .sort(),
       ];
     },
     classesInEncounter() {
-      return this.playersInEncounter.map((player) => player.class);
+      return this.playersInEncounter.map(
+        (player) => player.class.name
+      );
     },
     playerIdsInEncounter() {
       return Object.keys(this.encounter.fights[0].data);
     },
     playersInEncounter() {
-      return Object.values(this.report.players).filter((player) =>
+      return Object.values(this.report.raid.roster).filter((player) =>
         this.playerIdsInEncounter.includes(`${player.id}`)
       );
     },
     specsInEncounter() {
-      return this.playersInEncounter.map((player) => player.spec);
+      return this.playersInEncounter.map(
+        (player) => player.class.spec.name
+      );
     },
     defaultRoleFilters() {
       return ['Any', ...Object.values(Role)];
@@ -201,7 +231,7 @@ export default {
       if (this.selectedClassFilter !== 'Any') {
         playersWithClassMatchingFilter =
           playersWithClassMatchingFilter.filter(
-            (player) => player.class === this.selectedClassFilter
+            (player) => player.class.name === this.selectedClassFilter
           );
       }
 
@@ -213,66 +243,89 @@ export default {
       ];
     },
     sortOptions() {
-      return [
-        // Sort by name
-        {
-          text: 'Name',
-          function: (a, b) => {
-            return a.player.name < b.player.name
-              ? -1
-              : a.player.name > b.player.name
-              ? 1
-              : 0;
+      return {
+        default: [
+          // Sort by name
+          {
+            text: 'Name',
+            function: (a, b) => {
+              return a.player.name < b.player.name
+                ? -1
+                : a.player.name > b.player.name
+                ? 1
+                : 0;
+            },
           },
-        },
-        // Sort by class
-        {
-          text: 'Class',
-          function: (a, b) => {
-            return a.player.class < b.player.class
-              ? -1
-              : a.player.class > b.player.class
-              ? 1
-              : 0;
+          // Sort by class
+          {
+            text: 'Class',
+            function: (a, b) => {
+              return a.player.class.name < b.player.class.name
+                ? -1
+                : a.player.class.name > b.player.class.name
+                ? 1
+                : 0;
+            },
           },
-        },
-        // Sort by role
-        {
-          text: 'Role',
-          function: (a, b) => {
-            return a.player.role < b.player.role
-              ? -1
-              : a.player.role > b.player.role
-              ? 1
-              : 0;
+          // Sort by role
+          {
+            text: 'Role',
+            function: (a, b) => {
+              return a.player.role < b.player.role
+                ? -1
+                : a.player.role > b.player.role
+                ? 1
+                : 0;
+            },
           },
-        },
-        // Sort by start time
-        {
-          text: 'Start Time',
-          function: (a, b) => {
-            return a.entryData[0].start < b.entryData[0].start
-              ? -1
-              : a.entryData[0].start > b.entryData[0].start
-              ? 1
-              : 0;
+        ],
+        'active-time-view': [
+          // Sort by start time
+          {
+            text: 'Start Time',
+            function: (a, b) => {
+              return a.entryData[0].start < b.entryData[0].start
+                ? -1
+                : a.entryData[0].start > b.entryData[0].start
+                ? 1
+                : 0;
+            },
           },
-        },
-        // Sort by end time
-        {
-          text: 'End Time',
-          function: (a, b) => {
-            const lastIndexA = a.entryData.length - 1;
-            const lastIndexB = b.entryData.length - 1;
-            return a.entryData[lastIndexA].end <
-              b.entryData[lastIndexB].end
-              ? -1
-              : a.entryData[lastIndexA].end >
+          // Sort by end time
+          {
+            text: 'End Time',
+            function: (a, b) => {
+              const lastIndexA = a.entryData.length - 1;
+              const lastIndexB = b.entryData.length - 1;
+              return a.entryData[lastIndexA].end <
                 b.entryData[lastIndexB].end
-              ? 1
-              : 0;
+                ? -1
+                : a.entryData[lastIndexA].end >
+                  b.entryData[lastIndexB].end
+                ? 1
+                : 0;
+            },
           },
-        },
+        ],
+        'damage-done-view': [
+          {
+            // Sort by value
+            text: 'Damage Done',
+            function: (a, b) => {
+              return a.value < b.value
+                ? 1
+                : a.value > b.value
+                ? -1
+                : 0;
+            },
+          },
+        ],
+      };
+    },
+    viewSortOptions() {
+      return [
+        ...this.sortOptions[this.selectedView.component],
+        ...this.sortOptions.default,
       ];
     },
     fightNames() {
@@ -303,6 +356,10 @@ export default {
   },
   methods: {
     applySortAndFilters(array) {
+      if (!this.selectedSortOption) {
+        return array;
+      }
+
       array.sort((a, b) => this.selectedSortOption.function(a, b));
 
       if (this.sortReverse) {
@@ -317,22 +374,38 @@ export default {
 
       if (this.selectedClassFilter !== 'Any') {
         array = array.filter(
-          (entry) => entry.player.class === this.selectedClassFilter
+          (entry) =>
+            entry.player.class.name === this.selectedClassFilter
         );
       }
 
       return array;
     },
     activeTimes(fightIndex) {
-      let activeTimes = Object.values(
-        this.playerData[fightIndex].activeTimes
-      );
-
-      return this.applySortAndFilters(activeTimes);
+      if (
+        this.selectedView &&
+        this.selectedView.component &&
+        this.selectedView.component === 'active-time-view'
+      ) {
+        return this.applySortAndFilters(
+          Object.values(this.playerData[fightIndex].activeTimes)
+        );
+      } else {
+        Object.values(this.playerData[fightIndex].activeTimes);
+      }
     },
-    dps() {
-      // let dps = Object.values(this.playerData[fightIndex].dps);
-      return [];
+    damageDone(fightIndex) {
+      if (
+        this.selectedView &&
+        this.selectedView.component &&
+        this.selectedView.component === 'damage-done-view'
+      ) {
+        return this.applySortAndFilters(
+          Object.values(this.playerData[fightIndex].damageDone)
+        );
+      } else {
+        Object.values(this.playerData[fightIndex].damageDone);
+      }
     },
     duration(fightId) {
       return this.endTime[fightId] - this.startTime[fightId];
@@ -373,40 +446,26 @@ export default {
           endTime: undefined,
         };
         let newActiveTimeEntry = {};
-        // const playerReference =
-        //   this.report.players[playerCombatData.id];
 
         // For each combat event in the data array
         for (let combatEvent of playerCombatData.data) {
           if (this.isCombatAbility(combatEvent.type)) {
             // Set the start time if not already set
             if (!combatEvent.tick) {
-              this.trySetObjectProperty(
+              tryAddObjectProperty(
                 newActiveTimeEntry,
                 'start',
                 combatEvent.timestamp
               );
             }
 
-            if (
-              activeTime[playerCombatData.id].entryData.length > 0
-            ) {
-              // if (playerReference.name === 'Wetcheeks') {
-              //   console.log(
-              //     playerReference.name,
-              //     'post-death',
-              //     combatEvent
-              //   );
-              // }
-            }
-
-            // Ensure the start time the earliest timestamp
+            // Ensure the start time is the earliest timestamp
             this.startTime[fightId] = Math.min(
               this.startTime[fightId],
               combatEvent.timestamp
             );
 
-            // Ensure the end time the latest timestamp
+            // Ensure the end time is the latest timestamp
             this.endTime[fightId] = Math.max(
               this.endTime[fightId],
               combatEvent.timestamp
@@ -416,31 +475,19 @@ export default {
             newActiveTimeEntry.end = combatEvent.timestamp;
 
             // Store this new entry in the array of entries
-            activeTime[playerCombatData.id].entryData.push(
-              newActiveTimeEntry
-            );
+            activeTime[playerCombatData.id].entryData.push({
+              ...newActiveTimeEntry,
+            });
 
             // Reset the entry for later events, eg. After a battle res, soulstone or ankh
             newActiveTimeEntry = {};
-          } else {
-            if (
-              activeTime[playerCombatData.id].entryData.length > 0
-            ) {
-              // if (playerReference.name === 'Wetcheeks') {
-              //   console.log(
-              //     playerReference.name,
-              //     'post-death',
-              //     combatEvent
-              //   );
-              // }
-            }
           }
         }
 
         // Check if the new entry has no 'end' timestamp (player survived the fight)
         if (
-          objectHasProperty(newActiveTimeEntry, 'start') &&
-          !objectHasProperty(newActiveTimeEntry, 'end')
+          objectHasKey(newActiveTimeEntry, 'start') &&
+          !objectHasKey(newActiveTimeEntry, 'end')
         ) {
           activeTime[playerCombatData.id].entryData.push(
             newActiveTimeEntry
@@ -448,25 +495,25 @@ export default {
         }
       }
 
+      const playerIdsToRemove = [];
       for (let [key, value] of Object.entries(activeTime)) {
-        const playerReference = this.report.players[key];
+        if (value.entryData && value.entryData.length === 0) {
+          playerIdsToRemove.push(key);
+          continue;
+        }
+
+        if (!objectHasKey(this.report.raid.roster, key)) {
+          playerIdsToRemove.push(key);
+          continue;
+        }
+
+        const playerReference = this.report.raid.roster[key];
         const lastElement = this.getlastArrayElement(value.entryData);
-        // if (playerReference.name === 'Wetcheeks') {
-        //   console.log(
-        //     playerReference.name,
-        //     lastElement,
-        //     value.entryData
-        //   );
-        // }
 
         // If this entry has no end time, set the end time to the end of the encounter
-        // if (!lastElement.end) {
-        //   lastElement.end = this.endTime[fightId];
-        // }
-
         if (
-          objectHasProperty(lastElement, 'start') &&
-          !objectHasProperty(lastElement, 'end')
+          objectHasKey(lastElement, 'start') &&
+          !objectHasKey(lastElement, 'end')
         ) {
           lastElement.end = this.endTime[fightId];
         }
@@ -476,7 +523,6 @@ export default {
           id: playerReference.id,
           name: playerReference.name,
           class: playerReference.class,
-          spec: playerReference.spec,
           role: playerReference.role,
         };
 
@@ -497,9 +543,61 @@ export default {
         }
       }
 
+      for (let id of playerIdsToRemove) {
+        delete activeTime[id];
+      }
+
       return activeTime;
     },
-    // calculateDps(fightId) {},
+    calculateDamageDone(fightId) {
+      const playerData = this.rawPlayerData(fightId);
+      const damageDone = {};
+
+      // Combat data associated with each playerId
+      for (let playerCombatData of playerData) {
+        damageDone[playerCombatData.id] = {
+          value: 0,
+          player: {},
+        };
+
+        // For each combat event in the data array
+        for (let combatEvent of playerCombatData.data) {
+          if (
+            combatEvent.type === 'damage' &&
+            combatEvent.sourceID == playerCombatData.id
+          ) {
+            damageDone[playerCombatData.id].value +=
+              combatEvent.amount;
+          }
+        }
+      }
+
+      const playerIdsToRemove = [];
+      for (let [key, value] of Object.entries(damageDone)) {
+        if (value.entryData && value.entryData.length === 0) {
+          continue;
+        }
+
+        if (!objectHasKey(this.report.raid.roster, key)) {
+          continue;
+        }
+        const playerReference = this.report.raid.roster[key];
+
+        // Provide some player data for the visualisation
+        value.player = {
+          id: playerReference.id,
+          name: playerReference.name,
+          class: playerReference.class,
+          role: playerReference.role,
+        };
+      }
+
+      for (let id of playerIdsToRemove) {
+        delete damageDone[id];
+      }
+
+      return damageDone;
+    },
     isCombatAbility(type) {
       return type === 'heal' || type === 'cast' || type === 'damage';
     },
@@ -509,20 +607,25 @@ export default {
     getlastArrayElement(array) {
       return array[array.length - 1];
     },
-    trySetObjectProperty(object, key, value) {
-      if (!objectHasProperty(object, key)) {
-        object[key] = value;
-      }
-    },
     toggleSortDirection() {
       this.sortReverse = !this.sortReverse;
     },
     resetSortAndFilters() {
-      this.selectedSortOption = this.sortOptions[0];
+      this.selectedSortOption =
+        this.sortOptions[this.selectedView.component][0];
       this.selectedRoleFilter = this.defaultRoleFilters[0];
       this.selectedClassFilter = this.defaultClassFilters[0];
       this.selectedRoleFilter = this.refinedRoleFilters[0];
       this.selectedClassFilter = this.refinedClassFilters[0];
+    },
+    tryResetSort() {
+      if (
+        !this.sortOptions.default.some(
+          (option) => option.text === this.selectedSortOption.text
+        )
+      ) {
+        this.selectedSortOption = this.viewSortOptions[0];
+      }
     },
   },
 };
@@ -531,9 +634,5 @@ export default {
 <style scoped>
 .t-flipped-y {
   transform: scaleY(-1);
-}
-
-.dropdown {
-  max-width: 200px;
 }
 </style>

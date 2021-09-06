@@ -11,6 +11,8 @@
 </template>
 
 <script>
+import { mapActions } from 'vuex';
+
 export default {
   name: 'ReportCard',
   props: {
@@ -20,8 +22,15 @@ export default {
     },
   },
   methods: {
+    ...mapActions({
+      setReport: 'report/setReport',
+    }),
     loadReport() {
-      this.$router.push(`report/${this.report.id}`);
+      this.setReport(this.report.id);
+      this.$router.push({
+        name: 'Report',
+        params: { reportId: this.report.id },
+      });
     },
   },
 };

@@ -2,6 +2,7 @@ const Role = Object.freeze({
   HEALER: 'Healer',
   MELEE: 'Melee',
   RANGED: 'Ranged',
+  SPELL: 'Spell',
   TANK: 'Tank',
 });
 
@@ -45,41 +46,41 @@ const Specialisation = Object.freeze({
 });
 
 const SpecialisationRoleMap = Object.freeze({
-  [Specialisation.AFFLICTION]: Role.RANGED,
-  [Specialisation.ARCANE]: Role.RANGED,
+  [Specialisation.AFFLICTION]: Role.SPELL,
+  [Specialisation.ARCANE]: Role.SPELL,
   [Specialisation.ARMS]: Role.MELEE,
   [Specialisation.ASSASSINATION]: Role.MELEE,
-  [Specialisation.BALANCE]: Role.RANGED,
+  [Specialisation.BALANCE]: Role.SPELL,
   [Specialisation.BEASTMASTERY]: Role.RANGED,
   [Specialisation.COMBAT]: Role.MELEE,
-  [Specialisation.DEMONOLOGY]: Role.RANGED,
-  [Specialisation.DESTRUCTION]: Role.RANGED,
-  [Specialisation.DISCIPLINE]: Role.HEALER,
-  [Specialisation.ELEMENTAL]: Role.RANGED,
+  [Specialisation.DEMONOLOGY]: Role.SPELL,
+  [Specialisation.DESTRUCTION]: Role.SPELL,
+  [Specialisation.DISCIPLINE]: Role.SPELL,
+  [Specialisation.ELEMENTAL]: Role.SPELL,
   [Specialisation.ENHANCEMENT]: Role.MELEE,
   [Specialisation.FERAL]: Role.MELEE,
-  [Specialisation.FIRE]: Role.RANGED,
-  [Specialisation.FROST]: Role.RANGED,
+  [Specialisation.FIRE]: Role.SPELL,
+  [Specialisation.FROST]: Role.SPELL,
   [Specialisation.FURY]: Role.MELEE,
   [Specialisation.HOLY]: Role.HEALER,
   [Specialisation.MARKSMANSHIP]: Role.RANGED,
   [Specialisation.PROTECTION]: Role.TANK,
   [Specialisation.RESTORATION]: Role.HEALER,
   [Specialisation.RETRIBUTION]: Role.MELEE,
-  [Specialisation.SHADOW]: Role.RANGED,
+  [Specialisation.SHADOW]: Role.SPELL,
   [Specialisation.SUBTELTY]: Role.MELEE,
   [Specialisation.SURVIVAL]: Role.RANGED,
 });
 
 const ClassRoleMap = Object.freeze({
-  [Class.DRUID]: [Role.HEALER, Role.MELEE, Role.RANGED, Role.TANK],
+  [Class.DRUID]: [Role.HEALER, Role.MELEE, Role.SPELL, Role.TANK],
   [Class.HUNTER]: [Role.RANGED],
-  [Class.MAGE]: [Role.RANGED],
+  [Class.MAGE]: [Role.SPELL],
   [Class.PALADIN]: [Role.HEALER, Role.MELEE, Role.TANK],
-  [Class.PRIEST]: [Role.HEALER, Role.RANGED],
+  [Class.PRIEST]: [Role.HEALER, Role.SPELL],
   [Class.ROGUE]: [Role.MELEE],
-  [Class.SHAMAN]: [Role.HEALER, Role.MELEE, Role.RANGED],
-  [Class.WARLOCK]: [Role.RANGED],
+  [Class.SHAMAN]: [Role.HEALER, Role.MELEE, Role.SPELL],
+  [Class.WARLOCK]: [Role.SPELL],
   [Class.WARRIOR]: [Role.MELEE, Role.TANK],
 });
 
@@ -138,7 +139,8 @@ const RoleClassMap = Object.freeze({
     Class.PRIEST,
     Class.SHAMAN,
   ],
-  [Role.RANGED]: [
+  [Role.RANGED]: [Class.HUNTER],
+  [Role.SPELL]: [
     Class.DRUID,
     Class.HUNTER,
     Class.MAGE,

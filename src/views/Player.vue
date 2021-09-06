@@ -1,6 +1,5 @@
 <template>
   <v-container v-if="isLoaded">
-    <!-- <v-btn class="floating" @click="navigateBack">Back</v-btn> -->
     <page-header :title="player.name" :subtitle="playerDetails" />
     <v-row>
       <v-col cols="8">
@@ -34,8 +33,7 @@
 
 <script>
 import { ItemQuality } from '@/enums';
-import { mapState } from 'vuex';
-import { statPriority } from '@/modules';
+import { mapGetters } from 'vuex';
 import PageHeader from '@/components/PageHeader';
 import PlayerStats from '@/components/PlayerStats';
 import { Role } from '@/enums';
@@ -52,35 +50,28 @@ export default {
     isLoaded: false,
   }),
   mounted() {
-    this.reportId = this.$route.params.reportId;
     this.playerId = this.$route.params.playerId;
     this.isLoaded = true;
   },
   computed: {
-    ...mapState('report', ['reports']),
+    ...mapGetters('report', ['report']),
     player() {
-      return this.reports[this.reportId].players[this.playerId];
+      return this.report.raid.roster[this.playerId];
     },
     playerDetails() {
-      return `${this.player.spec ? this.player.spec : 'Protection'} ${
-        this.player.class
-      } [${this.player.talents}]`;
+      return `${this.player.class.spec.name} ${this.player.class.name} [${this.player.talents}]`;
     },
     stats() {
-      const classIndex = this.player.class.toLowerCase();
-      const specIndex = this.player.spec
-        ? this.player.spec.toLowerCase()
-        : 'protection';
-      const dpsStatPriority = statPriority.dps[classIndex][specIndex];
-      const statType =
+      let role =
         this.player.role === Role.TANK
           ? 'defense'
           : this.player.role === Role.HEALER
           ? 'spell'
-          : dpsStatPriority;
+          : this.player.role;
+
       return {
         primary: this.player.stats.base,
-        secondary: this.player.stats[statType],
+        secondary: this.player.stats[role.toLowerCase()],
       };
     },
   },
@@ -93,9 +84,6 @@ export default {
     },
     itemQuality(quality) {
       return `color: ${ItemQuality[quality].colour}`;
-    },
-    navigateBack() {
-      this.$router.go(-1);
     },
   },
 };

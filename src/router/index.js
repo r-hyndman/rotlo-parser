@@ -2,6 +2,7 @@ import Vue from 'vue';
 import VueRouter from 'vue-router';
 import Home from '@/views/Home.vue';
 import Encounter from '@/views/Encounter.vue';
+import Loader from '@/views/Loader.vue';
 import Player from '@/views/Player.vue';
 import Report from '@/views/Report.vue';
 import Authorisation from '@/views/Authorisation';
@@ -18,6 +19,11 @@ const routes = [
     path: '/authorisation',
     name: 'Authorisation',
     component: Authorisation,
+  },
+  {
+    path: '/load/:reportId',
+    name: 'Loader',
+    component: Loader,
   },
   {
     path: '/report/:reportId',
