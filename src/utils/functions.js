@@ -52,7 +52,7 @@ const getSpecFromString = (classString, specString) => {
     ) {
       return new Spec({
         name: Specialisation[specString.toUpperCase()],
-        icon: `../images/icons/${playerClass}/${specString}.png`.toLowerCase(),
+        icon: `${playerClass}/${specString}.png`.toLowerCase(),
       });
     }
   }

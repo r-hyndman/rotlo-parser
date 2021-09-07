@@ -5,16 +5,16 @@
       <div>
         <div
           class="d-flex mb-2"
-          v-for="(activeEntry, index) in activeTimes"
+          v-for="(value, index) in activeTimes"
           :key="index"
         >
           <v-img
             class="mr-4"
             max-height="24"
             max-width="24"
-            :src="activeEntry.player.class.spec.icon"
+            :src="playerIcon(value.player)"
           />
-          <div class="name">{{ activeEntry.player.name }}</div>
+          <div class="name">{{ value.player.name }}</div>
         </div>
       </div>
       <div ref="container" style="width: 100%">
@@ -73,6 +73,10 @@ export default {
   methods: {
     onResize() {
       this.visualisationWidth = this.containerWidth - this.imageWidth;
+    },
+    playerIcon(player) {
+      return require('../../public/images/icons/' +
+        player.class.spec.icon);
     },
   },
 };

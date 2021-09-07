@@ -5,7 +5,7 @@
         class="mr-4"
         max-height="24"
         max-width="24"
-        :src="player.class.spec.icon"
+        :src="playerIcon"
       />
       <div :style="playerClass">{{ player.name }}</div>
     </div>
@@ -24,6 +24,9 @@ export default {
   computed: {
     playerClass() {
       return `color: ${this.player.class.colour}`;
+    },
+    playerIcon() {
+      return `../images/icons/${this.player.class.spec.icon}`;
     },
   },
   methods: {
